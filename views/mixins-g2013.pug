@@ -1,0 +1,39 @@
+-
+    // Adapted from: https://stackoverflow.com/a/44996257
+    // Posted by Vbyec, modified by community. See post 'Timeline' for change history
+    // CC BY-SA 4.0
+    const split_pairs = array => array.reduce(r, v, i, a => {if (i%2===0) r.push(a.slice(i,i+2)); return result}, [])
+
+mixin result(rslt, query)
+    li.g
+        h3.r 
+            a(href=rslt.url)!=embolden(rslt.title, query)
+        .s
+            .kv(style="margin-bottom: 2px")
+                cite
+                    != embolden(rslt.url, query)
+                span.flc
+                    each t in rslt.tools
+                        != " - "
+                        //- a(href=`http://web.archive.org/web/${rslt.url}`)
+                        //-         | Open page in Web Archive
+                        a(href=t.url)=t.name
+            span.st
+                != embolden(rslt.description, query)
+            br
+            table.slk(cellpadding=0 cellspacing=0 style="border-collapse:collapse;margin-top:1px")
+                each srpair in split_pairs(rstls.subresults)
+                    tr.mslg
+                        each sr in srpair
+                            td(style="padding-left:23px;vertical-align:top")
+                                .sld
+                                    h3.r
+                                        a.sla(href=sr.url)=query
+                                    div.st(style="width:220px;overflow:hidden")
+                                        =str_stop_after(sr.description, 40)
+                            td(style="padding-left:7px;vertical-align:top")
+                                .sld
+                                    h3.r
+                                        a.sla(href=sr.url)=query
+                                    div.st(style="width:220px;overflow:hidden")
+                                        =str_stop_after(sr.description, 40)

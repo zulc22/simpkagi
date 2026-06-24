@@ -1,0 +1,74 @@
+html
+    head
+        title Kagi
+        style.
+            <!--
+            body,td,a,p,.h{font-family:arial,sans-serif;}
+            .h{font-size:20px;}
+            .q{color:#0000cc;}
+            //-->
+        script.
+            <!--
+            function sf(){document.f.q.focus();}
+            //-->
+    body(
+        bgcolor="#ffffff"
+        text="#000000"
+        ink="#0000cc"
+        vlink="#551a8b"
+        alink="#ff0000"
+        onload="sf()"
+    )
+        center 
+            img(src="/images/logo.gif" width=276 height=110 alt="Kagi")
+            br
+            br
+            form(action="/search" name="f")
+                table(border=0 cellspacing=0 cellpadding=4)
+                    tr 
+                        td(nowrap)
+                            font(size=-1)
+                                b Web
+                                //- | &nbsp;&nbsp;&nbsp;&nbsp;
+                                //- a(id="1a" class="q" href="/images") Images
+                                //- | &nbsp;&nbsp;&nbsp;&nbsp;
+                                //- a(id="2a" class="q" href="") Groups
+                                //- | &nbsp;&nbsp;&nbsp;&nbsp;
+                                //- a(id="4a" class="q" href="") News
+                                //- | &nbsp;&nbsp;&nbsp;&nbsp;
+                                //- a(id="5a" class="q" href="") Kitsch
+                                //- | &nbsp;&nbsp;&nbsp;&nbsp;
+                                //- a(id="7a" class="q" href="") Local
+                                //- sup
+                                //-     a(href="" style="text-decoration: none")
+                                //-         font(color="red") New!
+                table(cellspacing=0 cellpadding=0)
+                    tr
+                        td(width="25%") &nbsp;
+                        td(align="center")
+                            input(maxlength=256 size=55 name="q" value="")
+                            br
+                            input(type="submit" value="Kagi Search" name="btnK")
+                            input(type="submit" value="I'm Feeling Lucky" name="btnI")
+                        td(valign="top" nowrap width="25%")
+                        //-     font(size=-2)
+                        //-         | &nbsp;&nbsp;
+                        //-         a(href="/advanced_search") Advanced Search
+                        //-         br
+                        //-         | &nbsp;&nbsp;
+                        //-         a(href="/preferences") Preferences
+                        //-         br
+                        //-         | &nbsp;&nbsp;
+                        //-         a(href="/language_tools") Language Tools
+                        //-         br
+            br
+            br
+            //- font(size=-1)
+            //-     a(href="/ads") Advertising&nbsp;Programs 
+            //-     a(href="/about") About Kagi
+            p
+                font(size=-2)
+                    | &copy;200X Kagi. Humanize the Web.
+                    p (Copyright notices are added for immersion; SimpKagi is 
+                        | under the #[a(href="https://opensource.org/license/bsd-2-clause") BSD-2-Clause]
+                        | license and is not affiliated with Kagi Inc.)

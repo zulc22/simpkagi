@@ -1,0 +1,62 @@
+mixin result(rslt, query)
+    p
+        a(href=rslt.url)!=embolden(rslt.title, query)
+        table(cellpadding=0 cellspacing=0 border=0)
+            tr
+                td.j
+                    font(size=-1)
+                        -
+                            var h = linebreak(
+                                embolden(encode(rslt.description), encode(query)), 80
+                            ).replace(/..$/, ' <b>...</b>');
+                        !=h
+                        br
+                        font(color="green")=rslt.url
+                        each t in rslt.tools
+                            != " - "
+                            font(color="#7777cc")
+                                a(href=t.url)=t.name.trim()
+    if rslt.subresults
+        each subrslt in rslt.subresults
+            blockquote 
+                +result(subrslt, query)
+
+mixin kaaagi
+    - var number_of_as = searchinfo.next_batch;
+    - if (number_of_as === -1) number_of_as = searchinfo.curr_batch;
+    table(align="center" border=0 cellpadding=0 cellspacing=0)
+        tr(valign="top" align="center")
+            - var i = 1;
+            if searchinfo.curr_batch > 1
+                td(align="left")
+                    a(href=`/search?q=${query}&batch=${searchinfo.curr_batch-1}`)
+                        img(border=0 src="/images/kaaagi/previous.gif" width=34 height=26 alt="")
+                        br
+                        center #[strong Last]
+            else
+                td(align="left")
+                    img(border=0 src="/images/kaaagi/k.gif" width=13 height=26 alt="")
+                    br
+            while i <= number_of_as
+                if i === searchinfo.curr_batch
+                    td(align="left")
+                        img(border=0 src="/images/kaaagi/a_here.gif" width=15 height=26 alt="")
+                        br
+                        center #[font(size=-1 color="#a90a08") #[b=i]]
+                else
+                    td(align="left")
+                        a(href=`/search?q=${query}&batch=${i}`)
+                            img(border=0 src="/images/kaaagi/a.gif" width=15 height=26 alt="")
+                            br
+                            center #[font(size=-1 color="black")=i]
+                - i++;
+            if searchinfo.next_batch === -1
+                td(align="left")
+                    img(border=0 src="/images/kaaagi/last.gif" width=22 height=26 alt="")
+                    br
+            else
+                td(align="left")
+                    a(href=`/search?q=${query}&batch=${searchinfo.next_batch}`)
+                        img(border=0 src="/images/kaaagi/next.gif" width=43 height=26 alt="")
+                        br
+                        center #[strong Next]

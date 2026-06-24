@@ -1,0 +1,7 @@
+{
+  "watch": ["views/", "."],
+  "ext": "ts,json,pug",
+  "execMap": {
+    "ts": "node"
+  }
+}
