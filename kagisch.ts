@@ -3,7 +3,6 @@ import { TOKEN } from "./config.ts";
 import EventEmitter, { once } from "node:events";
 import * as cheerio from "cheerio";
 import type { Element } from "domhandler";
-import * as fs from "node:fs/promises";
 
 export type Result = {
   title: string;
@@ -18,7 +17,27 @@ export type Tool = {
   url: string;
 };
 
-function kagi_eventstream(query: string, page?: number) {
+export type SearchData = {
+  results: Result[];
+  results_message: string;
+  searchinfo: {
+    share_url: string;
+    curr_batch: number;
+    curr_piece: number;
+    next_batch: number;
+    next_piece: number;
+  };
+};
+
+type KagiEvent = {
+  tag: string;
+  payload: any;
+  sent_at: number;
+  kagi_version: string;
+};
+
+// construct EventSource from Kagi Search query
+function kagi_eventstream(query: string, page?: number): EventSource {
   // generate URL: kagi.com/socket/search?q={}[&batch={}]
   var u = new URL("https://kagi.com/socket/search");
   u.searchParams.set("q", query);
@@ -42,26 +61,7 @@ function kagi_eventstream(query: string, page?: number) {
   return es;
 }
 
-type KagiEvent = {
-  tag: string;
-  payload: any;
-  sent_at: number;
-  kagi_version: string;
-};
-
-export type SearchData = {
-  results: Result[];
-  results_message: string;
-  searchinfo: {
-    share_url: string;
-    curr_batch: number;
-    curr_piece: number;
-    next_batch: number;
-    next_piece: number;
-  };
-};
-
-// (==3
+// Perform a search and return when finished
 export async function search(
   query: string,
   page?: number,
@@ -104,7 +104,10 @@ export async function search(
   await once(done_ev, "done");
 
   var results: Result[] = [];
-  // await fs.writeFile("kagis_orig.html", tags.search.content);
+
+  // // DEBUG
+  // await fs.writeFile("debug_kagi_orig_content.html", tags.search.content);
+
   const $ = cheerio.load(tags.search.content);
 
   function parse_tool(

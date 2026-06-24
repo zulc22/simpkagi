@@ -11,14 +11,11 @@ export type AppConfiguration = {
   };
 };
 
-async function get_config() {
-  var text = await readFile("./config.ini", { encoding: "utf-8" });
-  try {
-    var tree = ini.parse(text);
-  } catch {
-    console.error(`Could not read config.ini.
+function err_config_unloadable(explanation: string) {
+  console.error(`${explanation}
 
-Expected something along the lines of:
+Hint:
+In config.ini, expected something along the lines of:
 
 [listen]
 port = default: 8080
@@ -28,17 +25,47 @@ host = default: 0.0.0.0 -- listen on all interfaces
 private_link = private session link or token; tokens automatically get clipped out of links
 
 (default values need not be specified.)`);
+}
+
+async function get_config(): Promise<AppConfiguration> {
+  var text: string;
+  var tree: { [key: string]: any };
+
+  // read config.ini text
+
+  try {
+    text = await readFile("./config.ini", { encoding: "utf-8" });
+  } catch {
+    err_config_unloadable("Failed to read config.ini (does it exist?)");
     process.exit(1);
   }
+
+  // parse as ini
+
+  try {
+    tree = ini.parse(text);
+  } catch {
+    err_config_unloadable("Could not parse config.ini");
+    process.exit(1);
+  }
+
+  // validate and fill in missing options
+
   if (!tree.listen) tree.listen = {};
+
   if (tree.listen.port) {
     tree.listen.port = parseInt(tree.listen.port);
   } else {
     tree.listen.port = 8080;
   }
+
+  if (!tree.kagi || !tree.kagi.private_link) {
+    err_config_unloadable("Required Kagi token was not specified.");
+    process.exit(1);
+  }
+
   return tree as AppConfiguration;
 }
-export const CONFIG = await get_config();
 
 function get_kagi_token_from_config(): string {
   var token = CONFIG.kagi.private_link;
@@ -51,4 +78,6 @@ function get_kagi_token_from_config(): string {
   }
   return token;
 }
+
+export const CONFIG = await get_config();
 export const TOKEN = get_kagi_token_from_config();
