@@ -24,27 +24,25 @@ const views = {
   search: pug_with_lib("views/search.pug"),
 };
 
-class Router {
-  pathname_matches!: { [pathname: string]: (ctx: Koa.Context) => void };
+type KoaMiniHandler = (ctx: Koa.Context) => void;
 
-  constructor() {
-    this.pathname_matches = {
-      "/search": this.perform_search,
-      "/": this.render(views.home),
-      "/favicon.ico": this.redirect_to("/images/favicon.ico"),
-    };
-  }
+namespace Router {
+  const pathname_matches: { [pathname: string]: KoaMiniHandler } = {
+    "/search": perform_search,
+    "/": render(views.home),
+    "/favicon.ico": redirect_to("/images/favicon.ico"),
+  };
 
-  async route(ctx: Koa.Context, next: Koa.Next) {
-    if (this.pathname_matches)
-      for (const [pathname, func] of Object.entries(this.pathname_matches)) {
+  export async function route(ctx: Koa.Context, next: Koa.Next) {
+    if (pathname_matches)
+      for (const [pathname, func] of Object.entries(pathname_matches)) {
         if (ctx.URL.pathname === pathname) return await func(ctx);
       }
 
     await next();
   }
 
-  async perform_search(ctx: Koa.Context) {
+  async function perform_search(ctx: Koa.Context) {
     var q = ctx.URL.searchParams.get("q");
     var batch = parseInt(ctx.URL.searchParams.get("batch") || "0");
     var lucky = ctx.URL.searchParams.get("btnI");
@@ -56,23 +54,23 @@ class Router {
       ctx.redirect(results.results[0].url);
       return;
     }
-    await this.render(views.search, {
+    await render(views.search, {
       query: q,
       results: [],
       ...results,
     })(ctx);
   }
 
-  redirect_to(location: string): (ctx: Koa.Context) => void {
+  function redirect_to(location: string): KoaMiniHandler {
     return (ctx: Koa.Context) => {
       ctx.redirect(location);
     };
   }
 
-  render(
+  function render(
     v: (locals?: object) => string,
     locals?: object,
-  ): (ctx: Koa.Context) => void {
+  ): KoaMiniHandler {
     return (ctx: Koa.Context) => {
       ctx.body = v(locals);
       ctx.type = "html";
@@ -80,8 +78,7 @@ class Router {
   }
 }
 
-const r = new Router();
-app.use(r.route);
+app.use(Router.route);
 
 app.use(mount("/images", serveStatic("images")));
 
