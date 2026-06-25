@@ -27,17 +27,16 @@ const views = {
 type KoaMiniHandler = (ctx: Koa.Context) => void;
 
 namespace Router {
-  const pathname_matches: { [pathname: string]: KoaMiniHandler } = {
+  const routes: { [pathname: string]: KoaMiniHandler } = {
     "/search": perform_search,
     "/": render(views.home),
     "/favicon.ico": redirect_to("/images/favicon.ico"),
   };
 
   export async function route(ctx: Koa.Context, next: Koa.Next) {
-    if (pathname_matches)
-      for (const [pathname, func] of Object.entries(pathname_matches)) {
-        if (ctx.URL.pathname === pathname) return await func(ctx);
-      }
+    for (const [pathname, func] of Object.entries(routes)) {
+      if (ctx.URL.pathname === pathname) return await func(ctx);
+    }
 
     await next();
   }

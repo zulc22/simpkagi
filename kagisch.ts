@@ -2,13 +2,18 @@ import { EventSource } from "eventsource";
 import { TOKEN } from "./config.ts";
 import EventEmitter, { once } from "node:events";
 import * as cheerio from "cheerio";
-import type { Element } from "domhandler";
+import type { AnyNode, Element } from "domhandler";
 
 export type Result = {
+  // result title
   title: string;
+  // page URL
   url: string;
+  // blerb/page description
   description: string;
+  // links for helpful stuff you can do with this link
   tools: Tool[];
+  // 'subresults' that show up underneath this result
   subresults?: Result[];
 };
 
@@ -17,6 +22,7 @@ export type Tool = {
   url: string;
 };
 
+// Models Kagi backend's returned data
 export type SearchData = {
   results: Result[];
   results_message: string;
@@ -29,6 +35,7 @@ export type SearchData = {
   };
 };
 
+// Models Kagi backend's events
 type KagiEvent = {
   tag: string;
   payload: any;
@@ -55,7 +62,7 @@ function kagi_eventstream(query: string, page?: number): EventSource {
             "Mozilla/5.0 (X11; Linux x86_64; rv:149.0) Gecko/20100101 Firefox/149.0",
         },
         "x-kagi-authorization": TOKEN,
-      }),
+      } as RequestInit),
   });
 
   return es;
@@ -96,7 +103,7 @@ export async function search(
         if (e.tag === "search" && tags.search) {
           console.log("Merged");
           tags.search.content += e.payload.content;
-        } else tags[e.tag] = e.payload;
+        } else (tags as { [key: string]: any })[e.tag] = e.payload;
       }
     }
   });
@@ -108,14 +115,16 @@ export async function search(
   // // DEBUG
   // await fs.writeFile("debug_kagi_orig_content.html", tags.search.content);
 
-  const $ = cheerio.load(tags.search.content);
+  const $ = cheerio.load(tags.search!.content);
 
   function parse_tool(
     tools_out: Tool[],
   ): (this: Element, i: number, elem: Element) => void {
     return function (this: Element, i, elem) {
       var url = $(this).attr("href")!;
+      // blacklists Kagi (AI) summary tool
       if (url.startsWith("/summarizer")) return;
+      // blacklists Kagi Assistant tool
       if (url.startsWith("/assistant")) return;
       tools_out.push({
         name: $(this).text().trim(),
@@ -138,21 +147,24 @@ export async function search(
     };
   }
 
-  $("._ext_ub_r").each(function (this: Element, i, elem) {
-    if ($(this).hasClass("widgetItem")) return;
-    if ($(this).prop("tagName") === "DETAILS") return;
+  $("._ext_ub_r").each(function (this: AnyNode, i, elem) {
+    var e = this as Element;
 
-    if ($(this).hasClass("sri-group")) {
-      var domresult = $(this).find("._0_SRI");
+    if ($(e).hasClass("widgetItem")) return;
+    if ($(e).prop("tagName") === "DETAILS") return;
+
+    if ($(e).hasClass("sri-group")) {
+      var domresult = $(e).find("._0_SRI");
     } else {
-      var domresult = $(this);
+      var domresult = $(e);
     }
-    var subresults = $(this).find(".__srgi");
+    var subresults = $(e).find(".__srgi");
 
     var result = parse_result(domresult);
     result.subresults = [];
-    subresults.each(function (this: Element, i, elem) {
-      result.subresults.push(parse_result($(this)));
+    subresults.each(function (this: AnyNode, i, elem) {
+      var e = this as Element;
+      result.subresults!.push(parse_result($(e)));
     });
 
     results.push(result);
@@ -161,7 +173,7 @@ export async function search(
   console.log(tags["search.info"]);
   return {
     results,
-    results_message: tags["top-content-unique"],
-    searchinfo: tags["search.info"],
+    results_message: tags["top-content-unique"]!,
+    searchinfo: tags["search.info"]!,
   };
 }
